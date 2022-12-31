@@ -1,0 +1,63 @@
+Create PV PVC & Pod Using VolumeClaim
+======================================
+touch pv-pvc-nfs-agas.yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: agas-pv
+spec:
+  storageClassName: nfs
+  accessModes:
+  - ReadWriteMany
+  capacity:
+    storage: 1Gi
+  nfs:
+    path: /NFS/nfsshare/daldildul
+    server: 192.168.187.220
+  persistentVolumeReclaimPolicy: Recycle
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+   name: agas-pvc
+spec:
+   storageClassName: nfs
+   accessModes:
+    - ReadWriteMany
+   resources:
+      requests:
+         storage: 1Gi
+   volumeName: agas-pv
+   
+
+touch agas-pod.yaml
+kind: Pod
+apiVersion: v1
+metadata:
+  name: mypod-agas-pod
+spec:
+  containers:
+    - name: mynginx
+      image: nginx
+      volumeMounts:
+      - mountPath: "/tmp/buatagas"
+        name: mypd-nginx
+  volumes:
+    - name: mypd-nginx
+      persistentVolumeClaim:
+        claimName: agas-pvc
+
+- oc apply -f pv-pvc-nfs-agas.yaml
+- oc apply -f agas-pod.yaml
+- oc exec -it mypod-agas-pod -- /bin/bash	
+- cd /tmp/buatagas
+- touch testing.txt
+- login keserver nfs cek pada /NFS/nfsshare/daldildul
+- ls 
+ - testing.txt
+ 
+ 
+ Add role service account
+ ========================
+ oc adm policy add-role-to-user edit system:serviceaccount:devmti-tfs:devmti-sa
